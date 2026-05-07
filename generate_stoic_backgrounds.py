@@ -262,6 +262,15 @@ def output_filename(index: int, quote: str, author: str) -> str:
     return f"stoic_{index:04d}_{author_slug}_{quote_slug}.png"
 
 
+def render_progress(current: int, total: int, bar_width: int = 32) -> str:
+    if total <= 0:
+        return "Progress: |" + ("-" * bar_width) + "|   0.00% (0/0)"
+    ratio = current / total
+    filled = min(bar_width, int(ratio * bar_width))
+    bar = ("#" * filled) + ("-" * (bar_width - filled))
+    return f"Progress: |{bar}| {ratio * 100:6.2f}% ({current}/{total})"
+
+
 def generate_wallpapers(
     background_path: Path,
     quotes_path: Path,
@@ -280,6 +289,8 @@ def generate_wallpapers(
         raise RuntimeError("No quotes found to render.")
 
     generated = 0
+    total = len(quote_data)
+    last_percent = -1
     for idx, quote_item in enumerate(quote_data, start=1):
         rendered = draw_quote(
             base_image=base_image,
@@ -289,6 +300,13 @@ def generate_wallpapers(
         )
         rendered.save(output_dir / output_filename(idx, quote_item["text"], quote_item["author"]))
         generated += 1
+
+        percent = int((generated * 100) / total)
+        if percent != last_percent or generated == total:
+            print("\r" + render_progress(generated, total), end="", flush=True)
+            last_percent = percent
+
+    print()
 
     return generated
 
