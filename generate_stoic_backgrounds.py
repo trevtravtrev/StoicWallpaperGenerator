@@ -146,8 +146,27 @@ def build_layout(
     x_center = ((icon_bbox[0] + icon_bbox[2]) // 2) if icon_bbox else image_width // 2
     author_text = f"- {normalize_text(author).upper()}" if author else ""
 
-    top_gaps = (64, 52, 40, 30, 24)
-    bottom_margins = (120, 96, 72, 56, 40)
+    icon_height = (icon_bbox[3] - icon_bbox[1]) if icon_bbox else int(image_height * 0.12)
+    preferred_gap = max(64, int(image_height * 0.075), int(icon_height * 1.15))
+    min_gap = max(24, int(image_height * 0.025))
+
+    top_gaps = (
+        int(preferred_gap * 1.38),
+        int(preferred_gap * 1.22),
+        int(preferred_gap * 1.08),
+        preferred_gap,
+        int(preferred_gap * 0.84),
+        int(preferred_gap * 0.70),
+        max(min_gap, int(preferred_gap * 0.56)),
+        min_gap,
+    )
+    bottom_margins = (
+        max(120, int(image_height * 0.105)),
+        max(96, int(image_height * 0.085)),
+        max(72, int(image_height * 0.070)),
+        max(56, int(image_height * 0.058)),
+        max(40, int(image_height * 0.045)),
+    )
     width_ratios = (0.56, 0.62, 0.68, 0.74, 0.80, 0.86)
 
     for top_gap in top_gaps:
@@ -178,7 +197,8 @@ def build_layout(
                     )
 
                     if quote_block_height <= available_height:
-                        top_padding = min(48, max(20, (available_height - quote_block_height) // 4))
+                        remaining_height = available_height - quote_block_height
+                        top_padding = min(120, max(22, int(remaining_height * 0.60)))
                         y_start = top + top_padding
                         return TextLayout(
                             lines=lines,
